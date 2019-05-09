@@ -13,6 +13,38 @@
 #include <dabnn/mat.h>
 #include <dabnn/net.h>
 
+static void BM_pack_mat_128_3_small(benchmark::State &state) {
+    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, 0);
+    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, 0);
+    for (auto _ : state) {
+        pack_mat_128_3(a, b);
+    }
+}
+
+static void BM_pack_mat_128_3(benchmark::State &state) {
+    const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float);
+    bnn::Mat b(1, 64, 64, 128, bnn::DataType::Bit);
+    for (auto _ : state) {
+        pack_mat_128_3(a, b);
+    }
+}
+
+static void BM_pack_mat_64_small(benchmark::State &state) {
+    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, 0);
+    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, 0);
+    for (auto _ : state) {
+        pack_mat_64(a, b);
+    }
+}
+
+static void BM_pack_mat_128_small(benchmark::State &state) {
+    const bnn::Mat a(1, 32, 32, 128, bnn::DataType::Float, 0);
+    bnn::Mat b(1, 32, 32, 128, bnn::DataType::Bit, 0);
+    for (auto _ : state) {
+        pack_mat_128(a, b);
+    }
+}
+
 static void BM_pack_mat_64(benchmark::State &state) {
     const bnn::Mat a(1, 64, 64, 128, bnn::DataType::Float);
     bnn::Mat b(1, 64, 64, 128, bnn::DataType::Bit);
@@ -341,8 +373,12 @@ static void BM_bireal18_imagenet_wo_fconv(benchmark::State &state) {
 
 BENCHMARK_MAIN();
 
-// BENCHMARK(BM_pack_mat_64);
-// BENCHMARK(BM_pack_mat_128);
+BENCHMARK(BM_pack_mat_64);
+BENCHMARK(BM_pack_mat_64_small);
+BENCHMARK(BM_pack_mat_128);
+BENCHMARK(BM_pack_mat_128_small);
+BENCHMARK(BM_pack_mat_128_3);
+BENCHMARK(BM_pack_mat_128_3_small);
 // BENCHMARK(BM_bnn_bconv_1x1_64);
 // BENCHMARK(BM_bnn_bconv_1x1_128);
 // BENCHMARK(BM_bnn_bconv_1x1_256);
@@ -350,19 +386,19 @@ BENCHMARK_MAIN();
 // BENCHMARK(BM_bgemm_128);
 // BENCHMARK(BM_bgemm_256);
 // BENCHMARK(BM_bgemm_256_s2);
-BENCHMARK(BM_bgemm_5x5_256);
+// BENCHMARK(BM_bgemm_5x5_256);
 // BENCHMARK(BM_bgemm_512);
-BENCHMARK(BM_bnn_bconv_3x3_64);
-BENCHMARK(BM_bnn_bconv_3x3_128);
-BENCHMARK(BM_bnn_bconv_3x3_256);
-BENCHMARK(BM_bnn_bconv_3x3_256_s2);
-BENCHMARK(BM_bnn_bconv_3x3_512);
+// BENCHMARK(BM_bnn_bconv_3x3_64);
+// BENCHMARK(BM_bnn_bconv_3x3_128);
+// BENCHMARK(BM_bnn_bconv_3x3_256);
+// BENCHMARK(BM_bnn_bconv_3x3_256_s2);
+// BENCHMARK(BM_bnn_bconv_3x3_512);
 // BENCHMARK(BM_bnn_bconv_3x3_1024);
 // BENCHMARK(BM_bireal18_cifar_wo_fconv);
 // BENCHMARK(BM_bireal18_imagenet_wo_fconv);
 // BENCHMARK(BM_bireal18_cifar);
-BENCHMARK(BM_bireal18_imagenet);
-BENCHMARK(BM_bireal18_imagenet_stem);
+// BENCHMARK(BM_bireal18_imagenet);
+// BENCHMARK(BM_bireal18_imagenet_stem);
 // BENCHMARK(BM_bnn_bconv_3x3_naive_128);
 // BENCHMARK(BM_bconv_float_1x1_128);
 // BENCHMARK(BM_bconv_float_3x3_128);

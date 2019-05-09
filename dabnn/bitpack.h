@@ -261,6 +261,13 @@ inline void pack_128(const float *float_ptr, void *binary_ptr, size_t size) {
           "x0");
 }
 
+inline void pack_mat_128_3(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+    assert(!binary_mat.empty());
+
+    pack_128_3(static_cast<float *>(float_mat.data), binary_mat.data,
+             float_mat.total());
+}
+
 inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     assert(!binary_mat.empty());
 
