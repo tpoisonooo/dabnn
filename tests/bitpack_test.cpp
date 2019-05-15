@@ -9,6 +9,7 @@
 #include <common/helper.h>
 #include <dabnn/mat.h>
 
+/*
 TEST(bitpack, pack_mat_128) {
     const size_t AHEIGHT = 64;
     const size_t AWIDTH = 64;
@@ -73,4 +74,28 @@ TEST(bitpack, pack_mat_fallback) {
     pack_128_fallback(a_data, expected.data, ALEN);
 
     ASSERT_EQ(a_binary, expected);
+}
+*/
+
+TEST(bitpack, temp) {
+    float a[128];
+    fill_rand_float(a, 128);
+    PNT(a[0] > 0, a[1] > 0, a[2] > 0, a[3] > 0);
+    uint64_t b[2] = {};
+    uint64_t c[2] = {};
+    pack_64_bitset(a, b);
+    pack_64_bitset(a + 64, b + 1);
+    pack_128_2(a, c, 128);
+
+    PNT(binrep(a[0], 16));
+    PNT(binrep(a[16], 16));
+    PNT(binrep(b, 16));
+
+    weight_pack_2(b, 2);
+    PNT(binrep(b, 16));
+    PNT(binrep(c, 16));
+    // PNT(std::bitset<64>(*b).count() + std::bitset<64>(*(b+1)).count());
+    // PNT(std::bitset<64>(*c).count() + std::bitset<64>(*(c+1)).count());
+
+    // ASSERT_EQ(a_binary, expected);
 }

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <common/flatbuffers_helper.h>
+#include <dabnn/bitpack.h>
 #include <dabnn/layers/Add.h>
 #include <dabnn/layers/Affine.h>
 #include <dabnn/layers/AvePool.h>
@@ -68,17 +69,29 @@ void Net::prepare() {
 
     for (const auto &tensor : *model_->initializers()) {
         if (tensor->data_type() == flatbnn::DataType::Bit) {
+            // This shape is the same as that of flatbuffers
             Shaper::Shape shape(tensor->shape()->begin(),
                                 tensor->shape()->end());
             const auto *data = tensor->bin_data()->Data();
+            const auto len = shaper.total(shape);
+            // len /8 is for uint8_t -> uint64_t
+            auto buf = std::make_shared<std::vector<uint64_t>>(len / 8);
+            // PNT(shape, len, buf->size(), len*sizeof(uint8_t));
+            memcpy(buf->data(), data, len * sizeof(uint8_t));
+            // LOG(INFO) << "a";
+            if (Shaper::c(shape) % 128 != 0) {
+                weight_pack_2(buf->data(), buf->size());
+            }
+
             const auto name = tensor->name()->str();
 
             shaper.AddShape(name, shape);
 
             add_mat(name,
                     std::make_shared<Mat>(shape[0], shape[1], shape[2],
-                                          shape[3], const_cast<uint8_t *>(data),
+                                          shape[3], buf->data(),
                                           bnn::DataType::Bit, false));
+            binary_bufs_.push_back(buf);
         } else if (tensor->data_type() == flatbnn::DataType::Float32) {
             Shaper::Shape shape(tensor->shape()->begin(),
                                 tensor->shape()->end());
@@ -102,7 +115,7 @@ void Net::prepare() {
                 memcpy(buf->data(), data, shape[0] * sizeof(float));
                 add_mat(name, std::make_shared<Mat>(shape[0], buf->data(),
                                                     DataType::Float));
-                float_bufs.push_back(buf);
+                float_bufs_.push_back(buf);
             }
         }
     }

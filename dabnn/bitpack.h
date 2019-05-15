@@ -16,25 +16,6 @@
 #include <glog/logging.h>
 #include "mat.h"
 
-inline void pack_mat_64(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
-    BNN_ASSERT(
-        float_mat.w * float_mat.c > 0 && float_mat.w * float_mat.c % 64 == 0,
-        float_mat.w * float_mat.c);
-    BNN_ASSERT(float_mat.c / 64 == binary_mat.c && float_mat.c % 64 == 0, "");
-
-    FORZ(n, float_mat.n) {
-        FORZ(h, float_mat.h) {
-            auto *fptr = float_mat.point<float>(n, h, 0);
-            auto *bptr = binary_mat.point<uint64_t>(n, h, 0);
-            FORZ(i, float_mat.w * float_mat.c / 64) {
-                pack_64_bitfield(fptr, bptr);
-                fptr += 64;
-                bptr++;
-            }
-        }
-    }
-}
-
 inline void pack_128_3(const float *float_ptr, void *binary_ptr, size_t size) {
     size_t nn_size = size >> 7;
 
@@ -104,6 +85,60 @@ inline void pack_128_3(const float *float_ptr, void *binary_ptr, size_t size) {
             "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18",
             "v19", "x0");
 }
+
+/**
+ * size is for uint64_t
+ */
+inline void weight_pack_2(uint64_t *ptr, size_t size) {
+    const size_t UNIT_LEN = 64;
+
+    for (size_t s = 0; s < size; s += 2) {
+        std::bitset<UNIT_LEN> old_bits_0(*ptr);
+        std::bitset<UNIT_LEN> old_bits_1(*(ptr + 1));
+        std::bitset<UNIT_LEN> new_bits_0;
+        std::bitset<UNIT_LEN> new_bits_1;
+        static_assert(std::is_same<decltype(old_bits_0.to_ulong()), uint64_t>::value,
+                      "bitset.to_ulong() must return uint64_t");
+        const auto A = 4;
+        const auto B = 8;
+        const auto C = 4;
+        for (size_t i = 0; i < A; i++) {
+            for (size_t j = 0; j < B; j++) {
+                for (size_t k = 0; k < C; k++) {
+                    const auto idx1 = i * B * C + j * C + k;
+                    const auto idx2 = k * B * C + (i * B + j) % C * B + (i * B + j) / C;
+                    bool bit;
+                    if (idx1 < 64) {
+                        bit = old_bits_0[idx1];
+                    } else {
+                        bit = old_bits_1[idx1 - 64];
+                    }
+                    if (idx2 < 64) {
+                        new_bits_0[idx2] = !bit;
+                    } else {
+                        new_bits_1[idx2 - 64] = !bit;
+                    }
+                    if (idx1 == 43) {
+                        PNT(idx2);
+                    }
+                    // if (idx1 == 0 && idx2 == 0) {
+                    //     PNT(bit, old_bits_0, old_bits_1, new_bits_0, new_bits_1);
+                    // }
+                    // if (idx2 == 1) {
+                    //        PNT(idx1, bit, old_bits_0, old_bits_1, new_bits_0, new_bits_1);
+                    // }
+                }
+
+            }
+        }
+        // PNT(binrep(*ptr, 16));
+        *ptr = new_bits_0.to_ulong();
+        *(ptr + 1) = new_bits_1.to_ulong();
+        // PNT(binrep(*ptr, 16));
+        ptr += 2;
+    }
+}
+
 inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
     size_t nn_size = size >> 7;
 
