@@ -72,25 +72,40 @@ void Net::prepare() {
             // This shape is the same as that of flatbuffers
             Shaper::Shape shape(tensor->shape()->begin(),
                                 tensor->shape()->end());
-            const auto *data = tensor->bin_data()->Data();
-            const auto len = shaper.total(shape);
-            // len /8 is for uint8_t -> uint64_t
-            auto buf = std::make_shared<std::vector<uint64_t>>(len / 8);
-            memcpy(buf->data(), data, len * sizeof(uint8_t));
-            if (Shaper::c(shape) % 128 == 0) {
-                // PNT(shape, Shaper::c(shape));
-                weight_pack_2(buf->data(), buf->size());
-            }
+            const auto *data = tensor->bin_data()->data();
+            // const auto len = shaper.total(shape);
+            // len / 64 is for uint64_t
+            // if (Shaper::c(shape) % 128 == 0) {
+            //     weight_pack_2(buf->data(), buf->size());
+            // }
 
             const auto name = tensor->name()->str();
 
             shaper.AddShape(name, shape);
 
-            add_mat(name,
-                    std::make_shared<Mat>(shape[0], shape[1], shape[2],
-                                          shape[3], buf->data(),
-                                          bnn::DataType::Bit, false));
-            binary_bufs_.push_back(buf);
+            /*
+            if (Shaper::c(shape) % 128 == 0) {
+                auto float_weight = std::vector<float>(len);
+                FORZ(i, len / 64) {
+                    std::bitset<64> bs(*(data + i));
+                    FORZ(j, 64) {
+                        float_weight.push_back(bs[j] ? 1 : -1);
+                    }
+                }
+                auto buf = std::make_shared<std::vector<uint64_t>>(len / 64);
+                pack_128_fallback(float_weight.data(), buf->data(), len);
+                add_mat(name,
+                        std::make_shared<Mat>(shape[0], shape[1], shape[2],
+                                              shape[3], buf->data(),
+                                              bnn::DataType::Bit, false));
+                binary_bufs_.push_back(buf);
+            } else {
+            */
+                add_mat(name,
+                        std::make_shared<Mat>(shape[0], shape[1], shape[2],
+                                              shape[3], const_cast<uint64_t *>(data),
+                                              bnn::DataType::Bit, false));
+            // }
         } else if (tensor->data_type() == flatbnn::DataType::Float32) {
             Shaper::Shape shape(tensor->shape()->begin(),
                                 tensor->shape()->end());

@@ -40,7 +40,15 @@ TEST(bitpack, pack_mat_128) {
     }
 }
 
-/*
+TEST(bitpack, bitset_bitfield) {
+    float fs[64];
+    fill_rand_float(fs, 64);
+    uint64_t buf1, buf2;
+    ::pack_64_bitfield(fs, &buf1);
+    ::pack_64_bitset(fs, &buf2);
+    ASSERT_EQ(buf1, buf2);
+}
+
 TEST(bitpack, pack_mat_64) {
     const size_t AHEIGHT = 64;
     const size_t AWIDTH = 64;
@@ -82,8 +90,8 @@ TEST(bitpack, pack_mat_fallback) {
 
     ASSERT_EQ(a_binary, expected);
 }
-*/
 
+/*
 TEST(bitpack, temp) {
     const size_t AHEIGHT = 64;
     const size_t AWIDTH = 64;
@@ -105,3 +113,4 @@ TEST(bitpack, temp) {
         ASSERT_EQ(*(static_cast<uint64_t *>(a_binary) + i), *(static_cast<uint64_t *>(expected) + i));
     }
 }
+*/

@@ -310,17 +310,17 @@ inline void pack_mat_128_3(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
 inline void pack_mat_128(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     assert(!binary_mat.empty());
 
-    pack_128_2(static_cast<float *>(float_mat.data), binary_mat.data,
+    pack_128(static_cast<float *>(float_mat.data), binary_mat.data,
              float_mat.total());
 }
 
 inline void pack_mat(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
     BNN_ASSERT(float_mat.c % 64 == 0, float_mat.c);
-    if (float_mat.c % 128 == 0) {
-        pack_mat_128(float_mat, binary_mat);
-    } else {
+    // if (float_mat.c % 128 == 0) {
+        // pack_mat_128(float_mat, binary_mat);
+    // } else {
         pack_mat_64(float_mat, binary_mat);
-    }
+    // }
 }
 
 #endif /* BITPACK_H */
