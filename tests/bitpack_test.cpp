@@ -26,10 +26,17 @@ TEST(bitpack, pack_mat_128) {
 
     FORZS(i, a_binary.total(), 2) {
         // LOG(INFO) << i;
-        ASSERT_EQ(128 - bitcount(*(static_cast<uint64_t *>(a_binary) + i)) -
-                      bitcount(*(static_cast<uint64_t *>(a_binary) + i + 1)),
-                  bitcount(*(static_cast<uint64_t *>(expected) + i)) +
-                      bitcount(*(static_cast<uint64_t *>(expected) + i + 1)));
+        const auto bc1 = 128 - bitcount(*(static_cast<uint64_t *>(a_binary) + i)) -
+                            bitcount(*(static_cast<uint64_t *>(a_binary) + i + 1));
+        const auto bc2 = bitcount(*(static_cast<uint64_t *>(expected) + i)) +
+                      bitcount(*(static_cast<uint64_t *>(expected) + i + 1));
+        if (bc1 != bc2) {
+            PNT(i, bc1, bc2);
+            PNT(binrep(*(static_cast<uint64_t *>(a_binary) + i), true));
+            PNT(binrep(*(static_cast<uint64_t *>(a_binary) + i + 1), true));
+            PNT(binrep(*(static_cast<uint64_t *>(expected) + i), true));
+            PNT(binrep(*(static_cast<uint64_t *>(expected) + i + 1), true));
+        }
     }
 }
 

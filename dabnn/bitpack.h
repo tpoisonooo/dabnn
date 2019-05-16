@@ -106,7 +106,7 @@ inline void weight_pack_2(uint64_t *ptr, size_t size) {
             for (size_t j = 0; j < B; j++) {
                 for (size_t k = 0; k < C; k++) {
                     const auto idx1 = i * B * C + j * C + k;
-                    const auto idx2 = k * B * C + (31 - (i * B + j) % A * B - (i * B + j) / A);
+                    const auto idx2 = k * B * A + (31 - (i * B + j) % A * B - (i * B + j) / A);
                     bool bit;
                     if (idx1 < 64) {
                         bit = old_bits_0[idx1];

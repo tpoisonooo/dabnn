@@ -80,6 +80,9 @@ inline float random_float() {
     static std::normal_distribution<float> distr;
 
     float rand_float = distr(eng) / 10;
+    if (rand_float == 0) {
+        return random_float();
+    }
     // LOG(INFO) << "Random float: " << rand_float;
 
     return rand_float;
