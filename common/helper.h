@@ -113,27 +113,32 @@ inline void fill_rand_uint64(uint64_t *data, size_t num) {
     FORZ(i, num) { *(data + i) = random_uint64(); }
 }
 
+/**
+ * parameter human will make the output on little endian machines human-readable
+ */
 template <typename T>
-std::string binrep(const T &a) {
+std::string binrep(const T &a, bool human) {
     const char *beg = reinterpret_cast<const char *>(&a);
     const char *end = beg + sizeof(a);
 
     std::stringstream ss;
 
-    while (beg != end) ss << std::bitset<CHAR_BIT>(*beg++) << ' ';
-    ss << '\n';
+    if (human) {
+        while (beg != end) ss << std::bitset<CHAR_BIT>(*(end-- - 1)) << ' ';
+    } else {
+        while (beg != end) ss << std::bitset<CHAR_BIT>(*beg++) << ' ';
+    }
     return ss.str();
 }
 
 template <typename T>
-std::string binrep(const T &a, const size_t size) {
-    const char *beg = reinterpret_cast<const char *>(&a);
-    const char *end = beg + size;
-
+std::string binrep(const T &a, const size_t num, bool human) {
+    const T *ptr = &a;
     std::stringstream ss;
-
-    while (beg != end) ss << std::bitset<CHAR_BIT>(*beg++) << ' ';
-    ss << '\n';
+    for (size_t i = 0; i < num; i++) {
+        ss << binrep(*(ptr + i), human);
+        ss << std::endl;
+    }
     return ss.str();
 }
 

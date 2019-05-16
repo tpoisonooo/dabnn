@@ -76,10 +76,9 @@ void Net::prepare() {
             const auto len = shaper.total(shape);
             // len /8 is for uint8_t -> uint64_t
             auto buf = std::make_shared<std::vector<uint64_t>>(len / 8);
-            // PNT(shape, len, buf->size(), len*sizeof(uint8_t));
             memcpy(buf->data(), data, len * sizeof(uint8_t));
-            // LOG(INFO) << "a";
-            if (Shaper::c(shape) % 128 != 0) {
+            if (Shaper::c(shape) % 128 == 0) {
+                // PNT(shape, Shaper::c(shape));
                 weight_pack_2(buf->data(), buf->size());
             }
 

@@ -38,10 +38,8 @@ inline void pack_64_bitset(const float *fptr, uint64_t *buf) {
     for (size_t i = 0; i < UNIT_LEN; i++) {
         bits[i] = (*(fptr + i) > 0);
     }
-    PNT(bits[0], bits[1], bits[2], bits[3]);
     static_assert(std::is_same<decltype(bits.to_ulong()), uint64_t>::value,
                   "bits.to_ulong() must return uint64_t");
-    PNT(binrep(bits.to_ulong()));
     *buf = bits.to_ulong();
 }
 

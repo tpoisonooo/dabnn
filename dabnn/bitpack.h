@@ -106,7 +106,7 @@ inline void weight_pack_2(uint64_t *ptr, size_t size) {
             for (size_t j = 0; j < B; j++) {
                 for (size_t k = 0; k < C; k++) {
                     const auto idx1 = i * B * C + j * C + k;
-                    const auto idx2 = k * B * C + (i * B + j) % C * B + (i * B + j) / C;
+                    const auto idx2 = k * B * C + (31 - (i * B + j) % A * B - (i * B + j) / A);
                     bool bit;
                     if (idx1 < 64) {
                         bit = old_bits_0[idx1];
@@ -117,9 +117,6 @@ inline void weight_pack_2(uint64_t *ptr, size_t size) {
                         new_bits_0[idx2] = !bit;
                     } else {
                         new_bits_1[idx2 - 64] = !bit;
-                    }
-                    if (idx1 == 43) {
-                        PNT(idx2);
                     }
                     // if (idx1 == 0 && idx2 == 0) {
                     //     PNT(bit, old_bits_0, old_bits_1, new_bits_0, new_bits_1);
@@ -206,7 +203,7 @@ inline void pack_128_2(const float *float_ptr, void *binary_ptr, size_t size) {
         :
         : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8",
             "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18",
-            "v19", "x0");
+            "v19", "v20", "v21", "v22", "v23", "x0");
 }
 inline void pack_128(const float *float_ptr, void *binary_ptr, size_t size) {
     size_t nn_size = size >> 7;
@@ -294,6 +291,13 @@ inline void pack_128(const float *float_ptr, void *binary_ptr, size_t size) {
         :
         : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8",
           "x0");
+}
+
+inline void pack_mat_128_2(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
+    assert(!binary_mat.empty());
+
+    pack_128_2(static_cast<float *>(float_mat.data), binary_mat.data,
+             float_mat.total());
 }
 
 inline void pack_mat_128_3(const bnn::Mat &float_mat, bnn::Mat &binary_mat) {
